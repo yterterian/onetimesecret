@@ -2,21 +2,33 @@ require 'mustache'
 require 'mail'
 
 module Onetime
+  MAIL_ERROR = "We're experiencing an email delivery issues. You can <a href='mailto:problems@onetimesecret.com'>let us know.</a>"
+
   class SMTP
     attr_accessor :from, :fromname
     def initialize from, fromname=nil
       @from, @fromname = from, fromname
     end
     def send to_address, subject, content
-      mail = Mail.new
-      mail.to to_address
-      mail.from self.from
-      mail.subject subject
-      mail.html_part do
-        content_type 'text/html; charset=UTF-8'
-        body content
+      OT.info '[email-send-start]'
+      begin
+        mail = Mail.new
+        mail.to to_address
+        mail.from self.from
+        mail.subject subject
+        mail.html_part do
+          content_type 'text/html; charset=UTF-8'
+          body content
+        end
+      rescue => ex
+        OT.info content  # this is our template with only the secret link
+        OT.le ex.message
+        OT.ld ex.backtrace
+        raise OT::MailError, MAIL_ERROR
       end
-      mail.deliver
+      ret = mail.deliver
+      OT.info '[email-send-end]'
+      ret
     end
     def self.setup
       Mail.defaults do

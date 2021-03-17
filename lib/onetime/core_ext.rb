@@ -27,9 +27,6 @@ end
 class Integer
   include QuantizeInteger
 end
-class Fixnum
-  include QuantizeInteger
-end
 
 
 unless defined?(Time::Units)
