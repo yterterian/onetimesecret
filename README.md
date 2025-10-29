@@ -1,126 +1,179 @@
-# ONE-TIME SECRET - v0.11-RC1 (2021-03-26)
+# OneTimeSecret - Vercel Edition
 
-*Keep sensitive info out of your email & chat logs.*
+A secure, modern secret sharing application built with Next.js 14, TypeScript, and Supabase. Deploy to Vercel in minutes.
 
-## What is a One-Time Secret? ##
+## What is OneTimeSecret?
 
 A one-time secret is a link that can be viewed only once. A single-use URL.
 
-<a class="msg" href="https://onetimesecret.com/">Give it a try!</a>
-
-## Why would I want to use it? ##
-
 When you send people sensitive info like passwords and private links via email or chat, there are copies of that information stored in many places. If you use a one-time link instead, the information persists for a single viewing which means it can't be read by someone else later. This allows you to send sensitive information in a safe way knowing it's seen by one person only. Think of it like a self-destructing message.
 
-## Dependencies
+## Features
 
-* Any recent Linux (we use Debian, Ubuntu, and CentOS)
-* Ruby 2.2+, 1.9.1+
-* Redis 2.6+
+- 🔒 **End-to-End Encryption**: AES-256 encryption with PBKDF2 key derivation
+- ⏱️ **Auto-Expiring Secrets**: Secrets automatically delete after viewing or time expiration
+- 🛡️ **Zero-Knowledge Architecture**: Encrypted before storage, we can't see your secrets
+- 🎨 **Beautiful UI**: Modern, responsive design with smooth animations
+- 🚀 **Serverless**: Runs on Vercel with edge functions
+- 📊 **Rate Limiting**: Protection against abuse
+- 🔐 **Passphrase Protection**: Optional additional security layer
+- 📱 **Mobile Responsive**: Works perfectly on all devices
 
-## Install Dependencies
+## Tech Stack
 
-*Debian*
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Database**: Supabase (PostgreSQL)
+- **Deployment**: Vercel
+- **Styling**: Tailwind CSS
+- **Security**: crypto-js, zod validation
 
-```bash
-  sudo apt-get update
-  sudo apt-get install build-essential
-  sudo apt-get install ntp libyaml-dev libevent-dev zlib1g zlib1g-dev openssl libssl-dev libxml2 libreadline-gplv2-dev
-  sudo apt-get install ruby redis
-  mkdir ~/sources
-```
+## Quick Start
 
-*CENTOS*
+### Prerequisites
 
-```bash
-  sudo yum install gcc gcc-c++ make libtool git ntp
-  sudo yum install openssl-devel readline-devel libevent-devel libyaml-devel zlib-devel
-  mkdir ~/sources
-```
+- Node.js 18+
+- npm or yarn
+- Supabase account
+- Vercel account
 
-## Install One-Time Secret
-
-```bash
-  sudo adduser ots
-  sudo mkdir /etc/onetime
-  sudo chown ots /etc/onetime
-
-  sudo su - ots
-  git clone https://github.com/onetimesecret/onetimesecret.git
-  cd onetimesecret
-  bundle install --frozen
-  bin/ots init
-  sudo mkdir /var/log/onetime /var/run/onetime /var/lib/onetime
-  sudo chown ots /var/log/onetime /var/run/onetime /var/lib/onetime
-  mkdir /etc/onetime
-  cp -rp etc/* /etc/onetime/
-  chown -R ots /etc/onetime /var/lib/onetime
-  chmod -R o-rwx /etc/onetime /var/lib/onetime
-```
-
-### About git cloning
-
-The instructions above suggest cloning via the `https` URI. You can also clone using the SSH URI if you have a github account (which is generally more convenient, but specific to github).
-
-**With a github account**
-```bash
-  ssh -T git@github.com
-  Hi delano! You've successfully authenticated, but GitHub does not provide shell access.
-```
-
-**Without a github account**
-```bash
-  ssh -T git@github.com
-  Warning: Permanently added the RSA host key for IP address '0.0.0.0/0' to the list of known hosts.
-  git@github.com: Permission denied (publickey).
-```
-
-*NOTE: you can also use the etc directory from here instead of copying it to the system. Just be sure to secure the permissions on it*
+### 1. Clone & Install
 
 ```bash
-  chown -R ots ./etc
-  chmod -R o-rwx ./etc
+git clone https://github.com/yourusername/onetimesecret.git
+cd onetimesecret
+npm install
 ```
 
-### Update the configuration
+### 2. Set up Supabase
 
-1. `/etc/onetime/config`
-  * Update your secret key
-    * Store it in your password manager because it's included in the secret encryption
-  * Add or remove locales
-  * Update the SMTP or SendGrid credentials
-  * Update the from address
-    * it's used for all sent emails
-  * Update the the limits at the bottom of the file
-    * These numbers refer to the number of times each action can occur for unauthenticated users.
-    * If you would like to increase the limits for authenticated users too, see (lib/onetime.rb](https://github.com/onetimesecret/onetimesecret/blob/main/lib/onetime.rb#L261-L279)
-1. `/etc/onetime/redis.conf`
-  * The host, port, and password need to match
-1. `/etc/onetime/locale/*`
-  * Optionally you can customize the text used throughout the site and emails
-  * You can also edit the `:broadcast` string to display a brief message at the top of every page
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Run the migration in `supabase/migrations/001_initial_schema.sql`
+3. Enable Row Level Security (RLS) policies
+4. Get your API keys from Settings > API
 
-### Running
+### 3. Configure Environment Variables
 
-There are many way to run the webapp, just like any Rack-based app. The default web server we use is [thin](https://github.com/macournoyer/thin).
+Create a `.env.local` file:
 
-**To run locally:**
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Generate with: openssl rand -base64 32
+ENCRYPTION_KEY=your_32_byte_encryption_key
+
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+### 4. Run Development Server
 
 ```bash
-  bundle exec thin -e dev -R config.ru -p 7143 start
+npm run dev
 ```
 
-**To run on a server:**
+Open [http://localhost:3000](http://localhost:3000)
+
+## Deployment to Vercel
+
+### One-Click Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/onetimesecret)
+
+### Manual Deploy
+
+1. Install Vercel CLI:
+   ```bash
+   npm i -g vercel
+   ```
+
+2. Deploy:
+   ```bash
+   vercel
+   ```
+
+3. Set environment variables in Vercel dashboard:
+   - Go to your project settings
+   - Add all environment variables from `.env.example`
+   - Redeploy
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+## API Reference
+
+### Create Secret
 
 ```bash
-  bundle exec thin -d -S /var/run/thin/thin.sock -l /var/log/thin/thin.log -P /var/run/thin/thin.pid -e prod -s 2 restart
+POST /api/secrets/create
+
+{
+  "secret": "your secret message",
+  "passphrase": "optional passphrase",
+  "ttl": 86400,  // seconds (default: 24 hours)
+  "maxViews": 1  // default: 1
+}
 ```
 
-## Generating a global secret
-
-We include a global secret in the encryption key so it needs to be long and secure. One approach for generating a secret:
+### View Secret
 
 ```bash
-  dd if=/dev/urandom bs=20 count=1 | openssl sha256
+GET /api/secrets/{key}  // Get status
+
+POST /api/secrets/{key}  // Reveal secret
+{
+  "passphrase": "if required"
+}
 ```
 
+## Security Features
+
+### Encryption
+- AES-256 encryption
+- PBKDF2 key derivation (10,000 iterations)
+- Unique keys per secret using nanoid (128-bit entropy)
+
+### Rate Limiting
+- 10 requests per 15 minutes for secret creation
+- 50 requests per 15 minutes for viewing
+
+### Security Headers
+- HSTS
+- CSP (Content Security Policy)
+- X-Frame-Options
+- X-Content-Type-Options
+- X-XSS-Protection
+
+### Row Level Security
+- Service role required for secret access
+- Users can only view their own metadata
+- Passphrase verification in API layer
+
+## Migration from Ruby
+
+This is a complete rewrite of the original Ruby OneTimeSecret application. Key differences:
+
+- **Ruby → TypeScript**: Full type safety
+- **Rack → Next.js**: Modern serverless architecture
+- **Redis → PostgreSQL**: Simplified with Supabase
+- **Thin → Vercel**: Cloud-native, globally distributed
+- **Mustache → React**: Component-based UI
+
+The original Ruby implementation is preserved in `README-RUBY.md` for reference.
+
+## Contributing
+
+Contributions welcome! Please open an issue or PR.
+
+## License
+
+MIT
+
+## Support
+
+- 📧 Email: support@onetimesecret.com
+- 💬 Issues: [GitHub Issues](https://github.com/yourusername/onetimesecret/issues)
+
+---
+
+Built with ❤️ using Next.js, TypeScript, and Supabase
